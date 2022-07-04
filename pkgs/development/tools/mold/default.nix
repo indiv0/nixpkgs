@@ -9,9 +9,17 @@
 , zlib
 , openssl
 , nix-update-script
+, overrideCC
+, gcc11
 }:
 
-stdenv.mkDerivation rec {
+let
+  minStdenv = overrideCC llvmPackages_latest.stdenv
+    (llvmPackages_latest.clang.override {
+      gccForLibs = gcc11.cc;
+    });
+in
+minStdenv.mkDerivation rec {
   pname = "mold";
   version = "1.2.1";
 
@@ -73,6 +81,6 @@ stdenv.mkDerivation rec {
     maintainers = with maintainers; [ nitsky ];
     platforms = platforms.unix;
     # error: aligned deallocation function of type 'void (void *, std::align_val_t) noexcept' is only available on macOS 10.14 or newer
-    broken = stdenv.isAarch64 || stdenv.isDarwin;
+    broken = stdenv.isDarwin;
   };
 }
